@@ -1,0 +1,22 @@
+{
+  "name": "git-x-flow-worker",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "start:worker": "pnpm --filter worker start",
+    "start:scheduler": "pnpm --filter scheduler start",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "clean": "turbo clean",
+    "db:generate": "pnpm --filter database prisma:generate",
+    "db:push": "pnpm --filter database prisma:push",
+    "db:migrate": "pnpm --filter database prisma:migrate"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.4.0"
+  }
+}
