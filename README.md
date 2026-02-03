@@ -46,13 +46,12 @@ cd git-x-flow-worker
 pnpm install
 
 # Generate Prisma client
-pnpm db:generate
+pnpm prisma:generate
 
-# Copy environment files
-cp apps/worker/.env.example apps/worker/.env
-cp apps/scheduler/.env.example apps/scheduler/.env
+# Copy environment file
+cp .env.example .env
 
-# Update .env files with your database and Redis connections
+# Update .env with your database and Redis connections
 ```
 
 ### Development
@@ -62,10 +61,10 @@ cp apps/scheduler/.env.example apps/scheduler/.env
 docker compose up redis -d
 
 # Run worker in dev mode
-pnpm --filter worker dev
+pnpm dev:worker
 
 # Run scheduler in dev mode (in another terminal)
-pnpm --filter scheduler dev
+pnpm dev:scheduler
 ```
 
 ### Production
@@ -86,26 +85,27 @@ pnpm start:scheduler
 
 ```
 git-x-flow-worker/
-├── apps/
-│   ├── worker/          # Job processor service
-│   │   ├── src/
-│   │   │   ├── index.ts      # Entry point
-│   │   │   ├── processor.ts  # Job processing logic
-│   │   │   └── twitter.ts    # Twitter API client
-│   │   └── Dockerfile
+├── src/
+│   ├── lib/               # Shared utilities
+│   │   ├── database.ts    # Prisma client
+│   │   ├── logger.ts      # Pino logger
+│   │   ├── queue.ts       # BullMQ config
+│   │   └── types.ts       # TypeScript types
 │   │
-│   └── scheduler/       # Cron scheduler service
-│       ├── src/
-│       │   └── index.ts      # Cron jobs
-│       └── Dockerfile
+│   ├── worker/            # Worker service
+│   │   ├── index.ts       # Worker entry point
+│   │   ├── processor.ts   # Job processing logic
+│   │   └── twitter.ts     # Twitter API client
+│   │
+│   └── scheduler/         # Scheduler service
+│       └── index.ts       # Cron jobs
 │
-├── packages/
-│   ├── database/        # Prisma client
-│   ├── queue/           # BullMQ configuration
-│   └── logger/          # Pino logger
+├── prisma/
+│   └── schema.prisma      # Database schema
 │
 ├── docker-compose.yml
-└── turbo.json
+├── package.json
+└── tsconfig.json
 ```
 
 ## Environment Variables
@@ -178,13 +178,14 @@ Worker and scheduler output structured JSON logs in production:
 ## Scripts
 
 ```bash
-pnpm dev           # Run all services in dev mode
-pnpm build         # Build all packages
-pnpm start:worker  # Start worker
-pnpm start:scheduler # Start scheduler
-pnpm db:generate   # Generate Prisma client
-pnpm db:push       # Push schema to database
-pnpm db:migrate    # Run migrations
+pnpm dev:worker        # Run worker in dev mode
+pnpm dev:scheduler     # Run scheduler in dev mode
+pnpm build             # Build TypeScript
+pnpm start:worker      # Start built worker
+pnpm start:scheduler   # Start built scheduler
+pnpm prisma:generate   # Generate Prisma client
+pnpm prisma:push       # Push schema to database
+pnpm prisma:migrate    # Run migrations
 ```
 
 ## License

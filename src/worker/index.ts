@@ -1,7 +1,7 @@
 import 'dotenv/config';
-import { createTwitterWorker, createQueueEvents, QUEUE_NAMES } from '@gitxflow/queue';
-import { logger } from '@gitxflow/logger';
-import { processTwitterPost } from './processor';
+import { createTwitterWorker, createQueueEvents, QUEUE_NAMES } from '../lib/queue.js';
+import { logger } from '../lib/logger.js';
+import { processTwitterPost } from './processor.js';
 
 async function main() {
     logger.info('Starting Twitter worker service...');

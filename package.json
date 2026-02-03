@@ -2,21 +2,43 @@
   "name": "git-x-flow-worker",
   "version": "1.0.0",
   "private": true,
-  "packageManager": "pnpm@9.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "turbo dev",
-    "build": "turbo build",
-    "start:worker": "pnpm --filter worker start",
-    "start:scheduler": "pnpm --filter scheduler start",
-    "test": "turbo test",
-    "lint": "turbo lint",
-    "clean": "turbo clean",
-    "db:generate": "pnpm --filter database prisma:generate",
-    "db:push": "pnpm --filter database prisma:push",
-    "db:migrate": "pnpm --filter database prisma:migrate"
+    "build": "tsc",
+    "dev:worker": "tsx watch  --env-file=.env src/worker/index.ts",
+    "dev:scheduler": "tsx watch --env-file=.env src/scheduler/index.ts ",
+    "start:worker": "node dist/worker/index.js",
+    "start:scheduler": "node dist/scheduler/index.js",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:migrate": "prisma migrate dev",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.3.0",
+    "bullmq": "^5.7.0",
+    "cron": "^3.1.0",
+    "dotenv": "^16.4.0",
+    "ioredis": "^5.4.0",
+    "pino": "^9.0.0",
+    "pino-pretty": "^11.0.0",
+    "twitter-api-v2": "^1.16.0"
   },
   "devDependencies": {
-    "turbo": "^2.0.0",
-    "typescript": "^5.4.0"
+    "@prisma/client": "^7.3.0",
+    "@types/cron": "^2.4.0",
+    "@types/node": "^20.12.0",
+    "@types/pg": "^8.16.0",
+    "@vitest/coverage-v8": "^4.0.18",
+    "pg": "^8.18.0",
+    "prisma": "7",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0",
+    "vitest": "^4.0.18"
+  },
+  "peerDependencies": {
+    "@prisma/client": "^7.3.0",
+    "pg": "^8.18.0"
   }
 }

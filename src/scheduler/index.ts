@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import { CronJob } from 'cron';
-import { prisma } from '@gitxflow/database';
-import { createTwitterQueue, DEFAULT_JOB_OPTIONS } from '@gitxflow/queue';
-import { logger, createChildLogger } from '@gitxflow/logger';
+import { prisma } from '../lib/db.js';
+import { createTwitterQueue, DEFAULT_JOB_OPTIONS } from '../lib/queue.js';
+import { logger, createChildLogger } from '../lib/logger.js';
 
 const queue = createTwitterQueue();
 
@@ -12,7 +12,8 @@ const queue = createTwitterQueue();
 async function queueUpcomingPosts(): Promise<void> {
     const log = createChildLogger({ task: 'queueUpcoming' });
 
-    try {
+    try { 
+
         const now = new Date();
         const lookAheadMinutes = parseInt(process.env.LOOK_AHEAD_MINUTES || '5');
         const lookAhead = new Date(now.getTime() + lookAheadMinutes * 60000);

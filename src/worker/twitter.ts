@@ -1,5 +1,5 @@
 import { TwitterApi } from 'twitter-api-v2';
-import { logger, createChildLogger } from '@gitxflow/logger';
+import { logger, createChildLogger } from '../lib/logger.js';
 
 /**
  * Custom error class for Twitter API errors
@@ -97,7 +97,9 @@ async function uploadMedia(
 
             // Upload to Twitter
             log.debug({ url, mimeType, size: buffer.length }, 'Uploading media to Twitter');
-            const mediaId = await client.v1.uploadMedia(buffer, { mimeType: mimeType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp' });
+            const mediaId = await client.v1.uploadMedia(buffer, {
+                mimeType: mimeType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp'
+            });
 
             mediaIds.push(mediaId);
             log.debug({ url, mediaId }, 'Media uploaded successfully');

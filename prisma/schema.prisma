@@ -1,0 +1,330 @@
+
+// Prisma Schema for gitXflow
+// Supabase PostgreSQL + Prisma Accelerate
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // url is now configured in prisma.config.ts or passed to PrismaClient
+}
+
+// ============================================
+// NextAuth.js Models
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String?   @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  username      String?   @unique // GitHub username
+
+  // Relations
+  accounts          Account[]
+  sessions          Session[]
+  achievements      Achievement[]
+  content           GeneratedContent[]
+  scheduledPosts    ScheduledPost[]
+  portfolio         Portfolio?
+  usageRecords      UsageRecord[]
+  preferences       UserPreferences?
+  subscription      Subscription?
+  socialConnections SocialConnection[]
+  syncHistory       SyncHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+
+  access_token  String?
+  refresh_token String?
+  expires_at    Int?
+  token_type    String?
+  scope         String?
+  id_token      String?
+  session_state String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ============================================
+// Application Models
+// ============================================
+
+model Achievement {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String   // first_contribution, pr_merged, issue_resolved, popular_repo, maintainer
+  title       String
+  description String?
+  repoName    String
+  repoOwner   String
+  repoUrl     String
+  repoStars   Int      @default(0)
+  prNumber    Int?
+  issueNumber Int?
+  score       Int      @default(0)
+  impactData  Json?    // Additional metrics like lines changed, files affected
+  occurredAt  DateTime
+  createdAt   DateTime @default(now())
+
+  user    User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content GeneratedContent[]
+
+  @@unique([userId, type, repoName, prNumber])
+  @@index([userId])
+  @@index([score])
+  @@index([occurredAt])
+}
+
+model GeneratedContent {
+  id            String   @id @default(cuid())
+  achievementId String
+  userId        String
+  format         String
+  content        String
+  wordCount       Int?
+  isEdited        Boolean  @default(false)
+
+  // NEW LIFECYCLE FIELDS
+  status          String   @default("saved") // saved | scheduled | posted
+  scheduledAt     DateTime?
+  postedAt         DateTime?
+  platform         String? // twitter, linkedin
+  platformPostId   String?
+  platformUrl      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  achievement    Achievement     @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scheduledPosts ScheduledPost[] // OPTIONAL (see below)
+
+  @@index([userId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model ScheduledPost {
+  id             String    @id @default(cuid())
+  userId         String
+  contentId      String
+  platform       String    // twitter, linkedin
+  scheduledFor   DateTime
+  status         String    @default("pending") // pending, queued, processing, published, failed
+  priority       Int       @default(0)         // For BullMQ priority (higher = more urgent)
+
+  // Job tracking (for BullMQ worker)
+  jobId          String?   @unique             // BullMQ job ID
+  queuedAt       DateTime?                     // When added to queue
+  startedAt      DateTime?                     // When processing began
+  completedAt    DateTime?                     // When finished
+  errorCode      String?                       // Categorized error code
+  maxRetries     Int       @default(3)         // Max retry attempts
+  lastAttemptAt  DateTime?                     // For backoff timing
+
+  platformPostId String?   // Platform-specific post ID
+  platformUrl    String?   // Link to the published post
+
+  errorMessage String?   @db.Text
+  attempts     Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  processedAt  DateTime?
+  publishedAt  DateTime?
+
+  user    User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content GeneratedContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  @@index([status, scheduledFor])
+  @@index([status, priority])
+  @@index([jobId])
+  @@index([userId])
+  @@index([publishedAt])
+}
+
+model Portfolio {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  username     String  @unique // Public URL slug
+  bio          String?
+  headline     String?
+  isPublic     Boolean @default(true)
+  showScore    Boolean @default(true)
+  showTwitter  Boolean @default(true)
+  showLinkedIn Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([username])
+}
+
+// ============================================
+// NEW: Usage Tracking (For Free Tier Limits)
+// ============================================
+
+model UsageRecord {
+  id             String @id @default(cuid())
+  userId         String
+  month          Int    // 1-12
+  year           Int    // 2024, 2025
+  postsGenerated Int    @default(0)
+  postsPublished Int    @default(0)
+  apiCallsUsed   Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, month, year])
+  @@index([userId])
+  @@index([year, month])
+}
+
+// ============================================
+// NEW: User Preferences
+// ============================================
+
+model UserPreferences {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  // Posting preferences
+  defaultPlatforms String[] @default(["twitter"]) // twitter, linkedin
+  aiTone           String   @default("professional") // professional, casual, technical
+  autoSync         Boolean  @default(false)
+
+  // Notifications
+  emailNotifications Boolean @default(true)
+  achievementAlerts  Boolean @default(true)
+  weeklyReports      Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// ============================================
+// NEW: Subscription & Billing
+// ============================================
+
+model Subscription {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  plan   String @default("free") // free, pro
+  status String @default("active") // active, cancelled, past_due
+
+  // Stripe integration
+  stripeCustomerId     String? @unique
+  stripeSubscriptionId String? @unique
+  stripePriceId        String?
+
+  // Billing
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean   @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([stripeCustomerId])
+  @@index([status])
+}
+
+// ============================================
+// NEW: Social Media Connections
+// ============================================
+
+model SocialConnection {
+  id       String @id @default(cuid())
+  userId   String
+  platform String // twitter, linkedin
+
+  // OAuth tokens (should be encrypted in application layer)
+  accessToken  String
+  refreshToken String?
+  expiresAt    DateTime?
+
+  // Platform info
+  platformUserId String?
+  username       String?
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, platform])
+  @@index([userId])
+  @@index([platform])
+}
+
+// ============================================
+// NEW: GitHub Sync History
+// ============================================
+
+model SyncHistory {
+  id     String @id @default(cuid())
+  userId String
+
+  status              String // success, failed, partial
+  achievementsFound   Int    @default(0)
+  achievementsNew     Int    @default(0)
+  achievementsUpdated Int    @default(0)
+
+  errorMessage String?
+  duration     Int? // milliseconds
+
+  syncedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([syncedAt])
+  @@index([status])
+}
+

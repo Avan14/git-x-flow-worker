@@ -1,8 +1,8 @@
-import type { Job } from '@gitxflow/queue';
-import type { TwitterPostJobData, JobResult } from '@gitxflow/queue';
-import { prisma } from '@gitxflow/database';
-import { logger, createChildLogger } from '@gitxflow/logger';
-import { postTweet, TwitterError } from './twitter';
+import type { Job } from '../lib/queue.js';
+import type { TwitterPostJobData, JobResult } from '../lib/types.js';
+import { prisma } from '../lib/db.js';
+import { logger, createChildLogger } from '../lib/logger.js';
+import { postTweet, TwitterError } from './twitter.js';
 
 /**
  * Process a Twitter post job

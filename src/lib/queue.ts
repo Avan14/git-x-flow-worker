@@ -1,6 +1,6 @@
 import { Queue, Worker, Job, QueueEvents } from 'bullmq';
 import type { ConnectionOptions, JobsOptions } from 'bullmq';
-import type { TwitterPostJobData, JobResult } from './types';
+import type { TwitterPostJobData, JobResult } from './types.js';
 
 // Redis connection config
 export const getConnection = (): ConnectionOptions => ({
@@ -72,4 +72,3 @@ export function createQueueEvents(queueName: string): QueueEvents {
 
 // Re-export types
 export type { Job, Queue, Worker, QueueEvents, JobsOptions };
-export * from './types';
