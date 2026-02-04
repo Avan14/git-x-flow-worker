@@ -4,6 +4,7 @@
   "packageManager": "pnpm@9.15.0",
   "private": true,
   "type": "module",
+  
   "scripts": {
     "build": "tsc",
     "heroku-prebuild": "echo 'Installing dependencies...'",
@@ -17,7 +18,8 @@
     "prisma:migrate": "prisma migrate dev",
     "test": "vitest run",
     "test:watch": "vitest"
-  },
+  
+},
   "dependencies": {
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
