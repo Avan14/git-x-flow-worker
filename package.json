@@ -6,8 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "heroku-prebuild": "echo 'Installing dependencies...'",
-    "heroku-build": "prisma generate && tsc && cp -r src/generated dist/",
+    "heroku-prebuild": "pnpm install --prod=false",
+    "heroku-build": "prisma generate && pnpm exec tsc && cp -r src/generated dist/",
     "dev:worker": "tsx watch  --env-file=.env src/worker/index.ts",
     "dev:scheduler": "tsx watch --env-file=.env src/scheduler/index.ts ",
     "start:worker": "node dist/worker/index.js",
