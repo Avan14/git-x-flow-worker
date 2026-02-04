@@ -26,12 +26,18 @@ importers:
       ioredis:
         specifier: ^5.4.0
         version: 5.9.2
+      pg:
+        specifier: ^8.18.0
+        version: 8.18.0
       pino:
         specifier: ^9.0.0
         version: 9.14.0
       pino-pretty:
         specifier: ^11.0.0
         version: 11.3.0
+      prisma:
+        specifier: '7'
+        version: 7.3.0(@types/react@19.2.10)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
       twitter-api-v2:
         specifier: ^1.16.0
         version: 1.29.0
@@ -48,12 +54,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^4.0.18
         version: 4.0.18(vitest@4.0.18(@types/node@20.19.30)(jiti@2.6.1)(tsx@4.21.0))
-      pg:
-        specifier: ^8.18.0
-        version: 8.18.0
-      prisma:
-        specifier: '7'
-        version: 7.3.0(@types/react@19.2.10)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(typescript@5.9.3)
       tsx:
         specifier: ^4.7.0
         version: 4.21.0
