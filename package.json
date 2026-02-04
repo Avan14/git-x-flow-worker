@@ -6,6 +6,8 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
+    "heroku-prebuild": "echo 'Installing dependencies...'",
+    "heroku-build": "prisma generate && pnpm run build",
     "dev:worker": "tsx watch  --env-file=.env src/worker/index.ts",
     "dev:scheduler": "tsx watch --env-file=.env src/scheduler/index.ts ",
     "start:worker": "node dist/worker/index.js",
@@ -18,6 +20,7 @@
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.3.0",
+    "@prisma/client": "^7.3.0",
     "bullmq": "^5.7.0",
     "cron": "^3.1.0",
     "dotenv": "^16.4.0",
@@ -39,7 +42,6 @@
     "vitest": "^4.0.18"
   },
   "peerDependencies": {
-    "@prisma/client": "^7.3.0",
     "pg": "^8.18.0"
   }
 }
