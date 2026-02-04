@@ -3,7 +3,9 @@
 // Supabase PostgreSQL + Prisma Accelerate
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
