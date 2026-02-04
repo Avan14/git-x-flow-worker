@@ -1,6 +1,7 @@
 {
   "name": "git-x-flow-worker",
   "version": "1.0.0",
+  "packageManager": "pnpm@9.15.0",
   "private": true,
   "type": "module",
   "scripts": {
