@@ -4,7 +4,6 @@
   "packageManager": "pnpm@9.15.0",
   "private": true,
   "type": "module",
-  
   "scripts": {
     "build": "tsc",
     "heroku-prebuild": "echo 'Installing dependencies...'",
@@ -18,8 +17,7 @@
     "prisma:migrate": "prisma migrate dev",
     "test": "vitest run",
     "test:watch": "vitest"
-  
-},
+  },
   "dependencies": {
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
@@ -27,23 +25,19 @@
     "cron": "^3.1.0",
     "dotenv": "^16.4.0",
     "ioredis": "^5.4.0",
+    "pg": "^8.18.0",
     "pino": "^9.0.0",
     "pino-pretty": "^11.0.0",
+    "prisma": "7",
     "twitter-api-v2": "^1.16.0"
   },
   "devDependencies": {
-    "@prisma/client": "^7.3.0",
     "@types/cron": "^2.4.0",
     "@types/node": "^20.12.0",
     "@types/pg": "^8.16.0",
     "@vitest/coverage-v8": "^4.0.18",
-    "pg": "^8.18.0",
-    "prisma": "7",
     "tsx": "^4.7.0",
     "typescript": "^5.4.0",
     "vitest": "^4.0.18"
-  },
-  "peerDependencies": {
-    "pg": "^8.18.0"
   }
 }
