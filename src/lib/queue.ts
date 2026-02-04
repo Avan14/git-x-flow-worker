@@ -8,6 +8,8 @@ export const getConnection = (): ConnectionOptions => ({
     port: parseInt(process.env.REDIS_PORT || '6379'),
     password: process.env.REDIS_PASSWORD,
     maxRetriesPerRequest: null,
+
+    tls: process.env.REDIS_HOST?.includes('upstash')? {} : undefined,
 });
 
 // Queue names
