@@ -1,7 +1,24 @@
 import 'dotenv/config';
+import express from 'express';
 import { createTwitterWorker, createQueueEvents, QUEUE_NAMES } from '../lib/queue.js';
 import { logger } from '../lib/logger.js';
 import { processTwitterPost } from './processor.js';
+
+// Health check server for Koyeb deployment
+const app = express();
+const PORT = parseInt(process.env.PORT || '8000');
+
+app.get('/health', (_req, res) => {
+    res.status(200).send('OK');
+});
+
+app.get('/', (_req, res) => {
+    res.status(200).json({ status: 'running', service: 'gitxflow-worker' });
+});
+
+const server = app.listen(PORT, () => {
+    logger.info({ port: PORT }, 'Health check server running');
+});
 
 async function main() {
     logger.info('Starting Twitter worker service...');
@@ -44,6 +61,9 @@ async function main() {
         logger.info({ signal }, 'Received shutdown signal, closing worker...');
 
         try {
+            // Close HTTP server
+            server.close();
+
             // Close worker (waits for active jobs to complete)
             await worker.close();
             await queueEvents.close();
