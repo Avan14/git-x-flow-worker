@@ -45,7 +45,16 @@ export async function processTwitterPost(
             );
         }
 
-        // 3. Check if token is expired
+        // 3. Check for required OAuth 1.0a credentials
+        if (!socialConnection.refreshToken) {
+            throw new TwitterError(
+                'MISSING_ACCESS_SECRET',
+                'OAuth 1.0a Access Token Secret is missing. User needs to reconnect Twitter.',
+                false
+            );
+        }
+
+        // 4. Check if token is expired
         if (socialConnection.expiresAt && socialConnection.expiresAt < new Date()) {
             throw new TwitterError(
                 'TOKEN_EXPIRED',
@@ -54,10 +63,11 @@ export async function processTwitterPost(
             );
         }
 
-        // 4. Post tweet
+        // 5. Post tweet
         log.debug('Posting tweet to Twitter API');
         const result = await postTweet({
             accessToken: socialConnection.accessToken,
+            accessSecret: socialConnection.refreshToken,
             content,
             mediaUrls,
         });

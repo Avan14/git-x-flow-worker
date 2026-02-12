@@ -17,6 +17,7 @@ export class TwitterError extends Error {
 
 interface PostTweetParams {
     accessToken: string;
+    accessSecret: string;
     content: string;
     mediaUrls?: string[];
 }
@@ -27,14 +28,30 @@ interface PostTweetResult {
 }
 
 /**
- * Post a tweet using Twitter API v2
+ * Post a tweet using Twitter API v2 with OAuth 1.0a User Context
  */
 export async function postTweet(params: PostTweetParams): Promise<PostTweetResult> {
-    const { accessToken, content, mediaUrls } = params;
+    const { accessToken, accessSecret, content, mediaUrls } = params;
     const log = createChildLogger({ service: 'twitter' });
 
-    // Create Twitter client with user's access token
-    const client = new TwitterApi(accessToken);
+    const appKey = process.env.TWITTER_API_KEY;
+    const appSecret = process.env.TWITTER_API_SECRET;
+
+    if (!appKey || !appSecret) {
+        throw new TwitterError(
+            'CONFIG_MISSING',
+            'TWITTER_API_KEY and TWITTER_API_SECRET must be set in environment variables.',
+            false
+        );
+    }
+
+    // Create Twitter client with OAuth 1.0a User Context (can post tweets)
+    const client = new TwitterApi({
+        appKey,
+        appSecret,
+        accessToken,
+        accessSecret,
+    });
 
     try {
         let mediaIds: string[] = [];
@@ -61,7 +78,19 @@ export async function postTweet(params: PostTweetParams): Promise<PostTweetResul
 
         return { tweetId, tweetUrl };
     } catch (error: any) {
-        log.error({ error: error.message, code: error.code }, 'Twitter API error');
+        // Log detailed error info for debugging
+        log.error(
+            {
+                message: error.message,
+                code: error.code,
+                statusCode: error.code,
+                data: error.data,             // Full Twitter API response body
+                errors: error.data?.errors,    // Twitter error details array
+                detail: error.data?.detail,    // Twitter error detail string
+                rateLimit: error.rateLimit,
+            },
+            'Twitter API error'
+        );
 
         // Map Twitter API errors to our error types
         throw mapTwitterError(error);

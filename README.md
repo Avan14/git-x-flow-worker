@@ -118,6 +118,8 @@ git-x-flow-worker/
 | `REDIS_HOST` | ✅ | localhost | Redis host |
 | `REDIS_PORT` | ❌ | 6379 | Redis port |
 | `REDIS_PASSWORD` | ❌ | - | Redis password |
+| `TWITTER_API_KEY` | ✅ | - | Twitter Consumer API Key (OAuth 1.0a) |
+| `TWITTER_API_SECRET` | ✅ | - | Twitter Consumer API Secret (OAuth 1.0a) |
 | `WORKER_CONCURRENCY` | ❌ | 5 | Concurrent jobs per worker |
 | `LOG_LEVEL` | ❌ | info | Logging level |
 
@@ -141,8 +143,8 @@ git-x-flow-worker/
 ### Worker (Job Processor)
 
 1. Pulls jobs from BullMQ queue
-2. Fetches user's Twitter OAuth token from database
-3. Posts tweet via Twitter API v2
+2. Fetches user's Twitter OAuth 1.0a tokens from database
+3. Posts tweet via Twitter API v2 (using User Context)
 4. Updates database with success/failure status
 5. Handles retries with exponential backoff
 
