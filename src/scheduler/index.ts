@@ -3,6 +3,23 @@ import { CronJob } from 'cron';
 import { prisma } from '../lib/db.js';
 import { createTwitterQueue, DEFAULT_JOB_OPTIONS } from '../lib/queue.js';
 import { logger, createChildLogger } from '../lib/logger.js';
+import express from 'express';
+
+// Health check server for Digital Ocean / Koyeb
+const app = express();
+const PORT = parseInt(process.env.PORT || '8000');
+
+app.get('/health', (_req, res) => {
+    res.status(200).send('OK');
+});
+
+app.get('/', (_req, res) => {
+    res.status(200).json({ status: 'running', service: 'gitxflow-scheduler' });
+});
+
+const server = app.listen(PORT, () => {
+    logger.info({ port: PORT }, 'Health check server running');
+});
 
 const queue = createTwitterQueue();
 
@@ -12,7 +29,7 @@ const queue = createTwitterQueue();
 async function queueUpcomingPosts(): Promise<void> {
     const log = createChildLogger({ task: 'queueUpcoming' });
 
-    try { 
+    try {
 
         const now = new Date();
         const lookAheadMinutes = parseInt(process.env.LOOK_AHEAD_MINUTES || '5');
@@ -215,7 +232,9 @@ async function main() {
         queueJob.stop();
         recoveryJob.stop();
         rateLimitJob.stop();
+
         await queue.close();
+        server.close(); // Close HTTP server
         logger.info('Scheduler shut down gracefully');
         process.exit(0);
     };
