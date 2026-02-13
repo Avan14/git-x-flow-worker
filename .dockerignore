@@ -1,0 +1,14 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+.env.*
+*.md
+!README.md
+.vscode
+.DS_Store
+coverage
+*.log
+pnpm-debug.log*
+.pnpm-store
